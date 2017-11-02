@@ -56,5 +56,20 @@ int main()
 		printf("error: %d\n", err);
 	}
 
-}
+	d = te_interp("(0x10^0x11) << 2", &err);
+	
+	if (!err) {
+		printf("interp xor: %x\n", (uint16_t)d);
+	} else {
+		printf("error: %d\n", err);
+	}
 
+	d = te_interp("~0x33<<2", &err);
+	
+	if (!err) {
+		printf("interp xor: %x\n", (uint16_t)d);
+	} else {
+		printf("error: %d\n", err);
+	}
+
+}

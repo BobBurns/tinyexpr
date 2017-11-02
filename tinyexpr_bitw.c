@@ -237,6 +237,9 @@ static const te_variable *find_lookup(const state *s, const char *name, int len)
 static int shiftl(int a, int b) {return (int)((uint32_t)a << (uint32_t)b);}
 static int shiftr(int a, int b) {return (int)((uint32_t)a >> (uint32_t)b);}
 static int xor(int a, int b) {return (int)((uint32_t)a  ^ (uint32_t)b);}
+static int or(int a, int b) {return (int)((uint32_t)a  | (uint32_t)b);}
+static int and(int a, int b) {return (int)((uint32_t)a  & (uint32_t)b);}
+static int not(int a) {return ~a;}
 static int add(int a, int b) {return a + b;}
 static int sub(int a, int b) {return a - b;}
 static int mul(int a, int b) {return a * b;}
@@ -298,8 +301,11 @@ void next_token(state *s) {
                     case '-': s->type = TOK_INFIX; s->function = sub; break;
                     case '*': s->type = TOK_INFIX; s->function = mul; break;
                     case '/': s->type = TOK_INFIX; s->function = divide; break;
-                    case '^': s->type = TOK_INFIX; s->function = pow; break;
-                    case '%': s->type = TOK_INFIX; s->function = fmod; break;
+                    case '^': s->type = TOK_INFIX; s->function = xor; break;
+                    case '~': s->type = TOK_INFIX; s->function = not; break;
+                    case '|': s->type = TOK_INFIX; s->function = or; break;
+                    case '&': s->type = TOK_INFIX; s->function = and; break;
+                    //case '%': s->type = TOK_INFIX; s->function = fmod; break;
                     case '(': s->type = TOK_OPEN; break;
                     case ')': s->type = TOK_CLOSE; break;
                     case ',': s->type = TOK_SEP; break;
@@ -436,22 +442,30 @@ static te_expr *base(state *s) {
 
 static te_expr *power(state *s) {
     /* <power>     =    {("-" | "+")} <base> */
-    int sign = 1;
-    while (s->type == TOK_INFIX && (s->function == add || s->function == sub)) {
+    int sign = 1, bnot = 0;
+    while (s->type == TOK_INFIX && (s->function == add || s->function == sub
+			    || s->function == not)) {
         if (s->function == sub) sign = -sign;
+        if (s->function == not) bnot = 1;
         next_token(s);
     }
 
     te_expr *ret;
 
     if (sign == 1) {
-        ret = base(s);
-    } else {
-        ret = NEW_EXPR(TE_FUNCTION1 | TE_FLAG_PURE, base(s));
-        ret->function = negate;
+    	if (bnot == 1) {
+        	ret = NEW_EXPR(TE_FUNCTION1 | TE_FLAG_PURE, base(s));
+        	ret->function = not;
+	} else {
+        	ret = base(s);
+	}
     }
+    else {
+        	ret = NEW_EXPR(TE_FUNCTION1 | TE_FLAG_PURE, base(s));
+        	ret->function = negate;
+    	 }
 
-    return ret;
+    	return ret;
 }
 
 #ifdef TE_POW_FROM_RIGHT
@@ -531,7 +545,9 @@ static te_expr *expr(state *s) {
     te_expr *ret = term(s);
 
     while (s->type == TOK_INFIX && (s->function == add || s->function == sub 
-			    || s->function == shiftl || s->function == shiftr)) {
+			    || s->function == shiftl || s->function == shiftr
+			    || s->function == xor || s->function == or || s->function == and
+			    )) {
         te_fun2 t = s->function;
         next_token(s);
         ret = NEW_EXPR(TE_FUNCTION2 | TE_FLAG_PURE, ret, term(s));
