@@ -43,15 +43,15 @@ For log = natural log uncomment the next line. */
 #include <stdint.h>
 
 #ifndef NAN
-#define NAN 0
+#define NAN (0.0/0.0)
 #endif
 
 #ifndef INFINITY
-#define INFINITY (1/0)
+#define INFINITY (1.0/0.0)
 #endif
 
 
-typedef int (*te_fun2)(int, int);
+typedef double (*te_fun2)(double, double);
 
 enum {
     TOK_NULL = TE_CLOSURE7+1, TOK_ERROR, TOK_END, TOK_SEP,
@@ -66,7 +66,7 @@ typedef struct state {
     const char *start;
     const char *next;
     int type;
-    union {int value; const int *bound; const void *function;};
+    union {double value; const double *bound; const void *function;};
     void *context;
 
     const te_variable *lookup;
@@ -118,10 +118,9 @@ void te_free(te_expr *n) {
 }
 
 
-//static double pi() {return 3.14159265358979323846;}
-////static double e() {return 2.71828182845904523536;}
-/*
-static double fac(double a) { simplest version of fac 
+static double pi() {return 3.14159265358979323846;}
+static double e() {return 2.71828182845904523536;}
+static double fac(double a) {/* simplest version of fac */
     if (a < 0.0)
         return NAN;
     if (a > UINT_MAX)
@@ -151,10 +150,8 @@ static double ncr(double n, double r) {
 }
 static double npr(double n, double r) {return ncr(n, r) * fac(r);}
 
-*/
 static const te_variable functions[] = {
     /* must be in alphabetical order */
-	/*
     {"abs", fabs,     TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"acos", acos,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"asin", asin,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
@@ -184,12 +181,11 @@ static const te_variable functions[] = {
     {"tan", tan,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"tanh", tanh,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {0, 0, 0, 0}
-    */
 };
 
 static const te_variable *find_builtin(const char *name, int len) {
     int imin = 0;
-    int imax = sizeof(functions) / sizeof(te_variable) ;
+    int imax = sizeof(functions) / sizeof(te_variable) - 2;
 
     /*Binary search.*/
     while (imax >= imin) {
@@ -223,15 +219,15 @@ static const te_variable *find_lookup(const state *s, const char *name, int len)
 
 
 
-static int shiftl(int a, int b) {return (int)((uint32_t)a << (uint32_t)b);}
-static int shiftr(int a, int b) {return (int)((uint32_t)a >> (uint32_t)b);}
-static int xor(int a, int b) {return (int)((uint32_t)a  ^ (uint32_t)b);}
-static int add(int a, int b) {return a + b;}
-static int sub(int a, int b) {return a - b;}
-static int mul(int a, int b) {return a * b;}
-static int divide(int a, int b) {return a / b;}
-static int negate(int a) {return -a;}
-static int comma(int a, int b) {(void)a; return b;}
+static double shiftl(double a, double b) {return (double)((uint32_t)a << (uint32_t)b);}
+static double shiftr(double a, double b) {return (double)((uint32_t)a >> (uint32_t)b);}
+static double xor(double a, double b) {return (double)((uint32_t)a  ^ (uint32_t)b);}
+static double add(double a, double b) {return a + b;}
+static double sub(double a, double b) {return a - b;}
+static double mul(double a, double b) {return a * b;}
+static double divide(double a, double b) {return a / b;}
+static double negate(double a) {return -a;}
+static double comma(double a, double b) {(void)a; return b;}
 
 
 void next_token(state *s) {
@@ -545,11 +541,11 @@ static te_expr *list(state *s) {
 }
 
 
-#define TE_FUN(...) ((int(*)(__VA_ARGS__))n->function)
+#define TE_FUN(...) ((double(*)(__VA_ARGS__))n->function)
 #define M(e) te_eval(n->parameters[e])
 
 
-int te_eval(const te_expr *n) {
+double te_eval(const te_expr *n) {
     if (!n) return NAN;
 
     switch(TYPE_MASK(n->type)) {
@@ -560,13 +556,13 @@ int te_eval(const te_expr *n) {
         case TE_FUNCTION4: case TE_FUNCTION5: case TE_FUNCTION6: case TE_FUNCTION7:
             switch(ARITY(n->type)) {
                 case 0: return TE_FUN(void)();
-                case 1: return TE_FUN(int)(M(0));
-                case 2: return TE_FUN(int, int)(M(0), M(1));
-                case 3: return TE_FUN(int, int, int)(M(0), M(1), M(2));
-                case 4: return TE_FUN(int, int, int, int)(M(0), M(1), M(2), M(3));
-                case 5: return TE_FUN(int, int, int, int, int)(M(0), M(1), M(2), M(3), M(4));
-                case 6: return TE_FUN(int, int, int, int, int, int)(M(0), M(1), M(2), M(3), M(4), M(5));
-                case 7: return TE_FUN(int, int, int, int, int, int, int)(M(0), M(1), M(2), M(3), M(4), M(5), M(6));
+                case 1: return TE_FUN(double)(M(0));
+                case 2: return TE_FUN(double, double)(M(0), M(1));
+                case 3: return TE_FUN(double, double, double)(M(0), M(1), M(2));
+                case 4: return TE_FUN(double, double, double, double)(M(0), M(1), M(2), M(3));
+                case 5: return TE_FUN(double, double, double, double, double)(M(0), M(1), M(2), M(3), M(4));
+                case 6: return TE_FUN(double, double, double, double, double, double)(M(0), M(1), M(2), M(3), M(4), M(5));
+                case 7: return TE_FUN(double, double, double, double, double, double, double)(M(0), M(1), M(2), M(3), M(4), M(5), M(6));
                 default: return NAN;
             }
 
@@ -574,13 +570,13 @@ int te_eval(const te_expr *n) {
         case TE_CLOSURE4: case TE_CLOSURE5: case TE_CLOSURE6: case TE_CLOSURE7:
             switch(ARITY(n->type)) {
                 case 0: return TE_FUN(void*)(n->parameters[0]);
-                case 1: return TE_FUN(void*, int)(n->parameters[1], M(0));
-                case 2: return TE_FUN(void*, int, int)(n->parameters[2], M(0), M(1));
-                case 3: return TE_FUN(void*, int, int, int)(n->parameters[3], M(0), M(1), M(2));
-                case 4: return TE_FUN(void*, int, int, int, int)(n->parameters[4], M(0), M(1), M(2), M(3));
-                case 5: return TE_FUN(void*, int, int, int, int, int)(n->parameters[5], M(0), M(1), M(2), M(3), M(4));
-                case 6: return TE_FUN(void*, int, int, int, int, int, int)(n->parameters[6], M(0), M(1), M(2), M(3), M(4), M(5));
-                case 7: return TE_FUN(void*, int, int, int, int, int, int, int)(n->parameters[7], M(0), M(1), M(2), M(3), M(4), M(5), M(6));
+                case 1: return TE_FUN(void*, double)(n->parameters[1], M(0));
+                case 2: return TE_FUN(void*, double, double)(n->parameters[2], M(0), M(1));
+                case 3: return TE_FUN(void*, double, double, double)(n->parameters[3], M(0), M(1), M(2));
+                case 4: return TE_FUN(void*, double, double, double, double)(n->parameters[4], M(0), M(1), M(2), M(3));
+                case 5: return TE_FUN(void*, double, double, double, double, double)(n->parameters[5], M(0), M(1), M(2), M(3), M(4));
+                case 6: return TE_FUN(void*, double, double, double, double, double, double)(n->parameters[6], M(0), M(1), M(2), M(3), M(4), M(5));
+                case 7: return TE_FUN(void*, double, double, double, double, double, double, double)(n->parameters[7], M(0), M(1), M(2), M(3), M(4), M(5), M(6));
                 default: return NAN;
             }
 
@@ -609,7 +605,7 @@ static void optimize(te_expr *n) {
             }
         }
         if (known) {
-            const int value = te_eval(n);
+            const double value = te_eval(n);
             te_free_parameters(n);
             n->type = TE_CONSTANT;
             n->value = value;
@@ -642,9 +638,9 @@ te_expr *te_compile(const char *expression, const te_variable *variables, int va
 }
 
 
-int te_interp(const char *expression, int *error) {
+double te_interp(const char *expression, int *error) {
     te_expr *n = te_compile(expression, 0, 0, error);
-    int ret;
+    double ret;
     if (n) {
         ret = te_eval(n);
         te_free(n);
