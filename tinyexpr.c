@@ -40,6 +40,7 @@ For log = natural log uncomment the next line. */
 #include <string.h>
 #include <stdio.h>
 #include <limits.h>
+#include <stdint.h>
 
 #ifndef NAN
 #define NAN (0.0/0.0)
@@ -218,6 +219,9 @@ static const te_variable *find_lookup(const state *s, const char *name, int len)
 
 
 
+static double shiftl(double a, double b) {return (double)((uint32_t)a << (uint32_t)b);}
+static double shiftr(double a, double b) {return (double)((uint32_t)a >> (uint32_t)b);}
+static double xor(double a, double b) {return (double)((uint32_t)a  ^ (uint32_t)b);}
 static double add(double a, double b) {return a + b;}
 static double sub(double a, double b) {return a - b;}
 static double mul(double a, double b) {return a * b;}
@@ -274,7 +278,7 @@ void next_token(state *s) {
 
             } else {
                 /* Look for an operator or special character. */
-                switch (s->next++[0]) {
+                switch (s->next[0]) {
                     case '+': s->type = TOK_INFIX; s->function = add; break;
                     case '-': s->type = TOK_INFIX; s->function = sub; break;
                     case '*': s->type = TOK_INFIX; s->function = mul; break;
@@ -285,8 +289,31 @@ void next_token(state *s) {
                     case ')': s->type = TOK_CLOSE; break;
                     case ',': s->type = TOK_SEP; break;
                     case ' ': case '\t': case '\n': case '\r': break;
+		/* bobs bitwise additions */
+		    case '>':
+			printf("got >\n");
+			if (s->next[1] != '>') {
+				s->type = TOK_ERROR;
+				break;
+			}
+			printf("got2 >\n");
+			s->type = TOK_INFIX;
+			s->function = shiftr;
+			*s->next++;
+			break;
+		    case '<':
+			if (s->next[1] != '<') {
+				s->type = TOK_ERROR;
+				break;
+			}
+			s->type = TOK_INFIX;
+			s->function = shiftl;
+			*s->next++;
+			break;
+
                     default: s->type = TOK_ERROR; break;
                 }
+		*s->next++;
             }
         }
     } while (s->type == TOK_NULL);
@@ -488,7 +515,8 @@ static te_expr *expr(state *s) {
     /* <expr>      =    <term> {("+" | "-") <term>} */
     te_expr *ret = term(s);
 
-    while (s->type == TOK_INFIX && (s->function == add || s->function == sub)) {
+    while (s->type == TOK_INFIX && (s->function == add || s->function == sub 
+			    || s->function == shiftl || s->function == shiftr)) {
         te_fun2 t = s->function;
         next_token(s);
         ret = NEW_EXPR(TE_FUNCTION2 | TE_FLAG_PURE, ret, term(s));
