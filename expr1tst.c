@@ -1,28 +1,28 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "tinyexpr.h"
+#include "tinyexpr_bitw.h"
 
-double my_low(double a) {
+int my_low(int a) {
 	uint16_t i;
 	i = (uint16_t)a;
-	return (double)(i & 0x00ff);
+	return (int)(i & 0x00ff);
 }
-double my_high(double a) {
+int my_high(int a) {
 	uint16_t i;
 	i = (uint16_t)a;
-	return (double)((i & 0xff00) >> 8);
+	return (int)((i & 0xff00) >> 8);
 }
 
 int main()
 {
-	double x, result;
+	int x, result;
 	int err = 0;
 	te_variable vars[] = {
 		{"my_low", my_low, TE_FUNCTION1},
 		{"my_high", my_high, TE_FUNCTION1},
 		{"x", &x}
 	};
-	char *strval = "0x3322";
+	char *strval = "0x11dd";
 	char expr[100];
 	sprintf(expr, "my_high(%s)", strval);
 
@@ -30,9 +30,9 @@ int main()
 	te_expr *m = te_compile("my_low(x)", vars, 2, &err);
 	te_expr *o = te_compile("my_high(x)", vars, 3, &err);
 
-	if (o) {
+	if (m) {
 		x = 0x3322;
-		result = te_eval(o);
+		result = te_eval(m);
 		printf("result %x\n", (uint16_t)result);
 	} else {
 		printf("error...%d \n", err);
@@ -40,17 +40,21 @@ int main()
 	printf("%x \n", (0x3322 & 0xff00) >> 8);
 
 	err = 0;
-	double y = 0x08;
-	double c = te_interp("0x08 << 1", &err);
+	int y = 0x08;
+	int c = te_interp("0x08 << 1", &err);
+	
 	if (!err) {
 		printf("interp: %x\n", (uint16_t)c);
+	} else {
+		printf("error: %d\n", err);
+	}
+	int d = te_interp("low(0x3422)", &err);
+	
+	if (!err) {
+		printf("interp: %x\n", (uint16_t)d);
 	} else {
 		printf("error: %d\n", err);
 	}
 
 }
 
-
-
-	
-	
