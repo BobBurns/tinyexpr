@@ -1,3 +1,14 @@
+This is a fork of https://github.com/codeplea/tinyexpr
+
+I've copy/modified tinyexpr.c tinyexpr.h to tinyexpr_bitw.c tinyexpr.h
+It has been altered from the original software to be used for bitwise operations
+Most notably all of the double types are now int, and most of the floating point
+math funcitons are commented out.  
+supported operators << >> | ~ ^ & . Also, I added a coulple of custom bit functions
+low and high
+ 
+My apologies to the original author for such a sloppy hack :) 
+
 [![Build Status](https://travis-ci.org/codeplea/tinyexpr.svg?branch=master)](https://travis-ci.org/codeplea/tinyexpr)
 
 

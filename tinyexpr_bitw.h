@@ -22,6 +22,16 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 
+/* This has been altered from the original software to be used for bitwise operations
+ * Most notably all of the double types are now int, and most of the floating point
+ * math funcitons are commented out.  
+ * supported operators << >> | ~ ^ & . Also, I added a coulple of custom bit functions
+ * low and high
+ *
+ * My apologies to the original author for such a sloppy hack :) 
+ */
+
+
 #ifndef __TINYEXPR_H__
 #define __TINYEXPR_H__
 
@@ -52,7 +62,7 @@ enum {
 };
 
 typedef struct te_variable {
-    const char *name;
+    char *name;
     const void *address;
     int type;
     void *context;
