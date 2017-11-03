@@ -1,6 +1,6 @@
 This is a fork of https://github.com/codeplea/tinyexpr
 
-I've copy/modified tinyexpr.c tinyexpr.h to tinyexpr_bitw.c tinyexpr.h
+I've copy/modified tinyexpr.c tinyexpr.h to tinyexpr_bitw.c tinyexpr_bitw.h
 It has been altered from the original software to be used for bitwise operations
 Most notably all of the double types are now int, and most of the floating point
 math funcitons are commented out.  
