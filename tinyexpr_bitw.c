@@ -160,13 +160,11 @@ static double npr(double n, double r) {return ncr(n, r) * fac(r);}
 
 */
 int low(int a) {
-	printf("got low\n");
 	uint16_t i;
 	i = (uint16_t)a;
 	return (int)(i & 0x00ff);
 }
 int high(int a) {
-	printf("got high\n");
 	uint16_t i;
 	i = (uint16_t)a;
 	return (int)((i & 0xff00) >> 8);
