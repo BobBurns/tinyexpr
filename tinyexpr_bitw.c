@@ -173,8 +173,8 @@ int high(int a) {
 }
 static const te_variable functions[] = {
     /* must be in alphabetical order */
-	{"high", low, TE_FUNCTION1, 0},
-	{"low", high, TE_FUNCTION1, 0}
+	{"high", high, TE_FUNCTION1, 0},
+	{"low", low, TE_FUNCTION1, 0}
 	/*
     {"abs", fabs,     TE_FUNCTION1 | TE_FLAG_PURE, 0},
     {"acos", acos,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
