@@ -271,6 +271,12 @@ void next_token(state *s) {
         if ((s->next[0] >= '0' && s->next[0] <= '9') || s->next[0] == '.') {
             s->value = strtod(s->next, (char**)&s->next);
             s->type = TOK_NUMBER;
+        } else
+	    /* bob adding char value */
+	if (s->next[0] == '\'') {
+		s->value = s->next[1];
+		s->next += 3;
+		s->type = TOK_NUMBER;
         } else {
             /* Look for a variable or builtin function call. */
             if (s->next[0] >= 'a' && s->next[0] <= 'z') {
@@ -321,12 +327,10 @@ void next_token(state *s) {
                     case ' ': case '\t': case '\n': case '\r': break;
 		/* bobs bitwise additions */
 		    case '>':
-			printf("got >\n");
 			if (s->next[1] != '>') {
 				s->type = TOK_ERROR;
 				break;
 			}
-			printf("got2 >\n");
 			s->type = TOK_INFIX;
 			s->function = shiftr;
 			*s->next++;
