@@ -333,7 +333,7 @@ void next_token(state *s) {
 			}
 			s->type = TOK_INFIX;
 			s->function = shiftr;
-			*s->next++;
+			s->next++;
 			break;
 		    case '<':
 			if (s->next[1] != '<') {
@@ -342,12 +342,12 @@ void next_token(state *s) {
 			}
 			s->type = TOK_INFIX;
 			s->function = shiftl;
-			*s->next++;
+			s->next++;
 			break;
 
                     default: s->type = TOK_ERROR; break;
                 }
-		*s->next++;
+		s->next++;
             }
         }
     } while (s->type == TOK_NULL);
